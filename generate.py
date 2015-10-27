@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import markdown
 import jinja2
 import os
@@ -64,7 +66,7 @@ def sm_open_default(pre, test, p0):
         return '{0}{1}'.format(pre, test)
 
 def sm_open_html(pre, test, p0):
-        print 'p0',p0
+        #print 'p0',p0
         if p0:
                 p = os.path.join(*p0)
                 h0,t0 = os.path.splitext(test)
