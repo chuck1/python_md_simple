@@ -6,26 +6,26 @@ import os
 import sys
 
 def get_source():
-        md_files = []
-        for root, dirs, files in os.walk('.'):
-                for f in files:
-                        h,t = os.path.splitext(f)
-                        if t == '.md':
-                                p = os.path.join(root,f)
-                                p = os.path.normpath(p)
-                                md_files.append(p)
-        return md_files
+	md_files = []
+	for root, dirs, files in os.walk('source'):
+		for f in files:
+			h,t = os.path.splitext(f)
+			if t == '.md':
+				p = os.path.join(root,f)
+				p = os.path.normpath(p)
+				md_files.append(p)
+	return md_files
 
 def get_html():
-		l = []
-		for root, dirs, files in os.walk('build'):
-				for f in files:
-						h,t = os.path.splitext(f)
-						if t == '.html':
-								p = os.path.join(root,f)
-								p = os.path.normpath(p)
-								l.append(p)
-		return l
+	l = []
+	for root, dirs, files in os.walk('build'):
+			for f in files:
+					h,t = os.path.splitext(f)
+					if t == '.html':
+							p = os.path.join(root,f)
+							p = os.path.normpath(p)
+							l.append(p)
+	return l
 		
 def listize(path):
         l = []
@@ -53,28 +53,31 @@ def sitemap_insert(m, p, p0):
         sitemap_insert(m0, p[1:], p0)
 
 def sitemap(files):
-        m = ([],{})
-        for f in files:
-			f = listize(f)
-			f = f[1:]
-			
-			sitemap_insert(m, f, f)
+	m = ([],{})
+	for f in files:
+		f = listize(f)
+		f = f[1:]
+		
+		sitemap_insert(m, f, f)
 
-        return m
+	return m
 
 def sm_open_default(pre, test, p0):
         return '{0}{1}'.format(pre, test)
 
 def sm_open_html(pre, test, p0):
-        #print 'p0',p0
-        if p0:
-                p = os.path.join(*p0)
-                h0,t0 = os.path.splitext(test)
-                h,t = os.path.splitext(p)
-                if t0 == '.html':
-                        return '{0}<ul><li><a href="{1}">{2}</a></li>'.format(pre, h+'.html', h0)
-
-        return '{0}<ul><li>{1}</li>'.format(pre, test)
+	#print 'p0',p0
+	
+	h0,t0 = os.path.splitext(test)
+	if t0 == '.html':
+		if p0:
+			p = os.path.join(*p0)
+			h,t = os.path.splitext(p)
+			return '{0}<ul><li><a href="{1}">{2}</a></li>'.format(pre, h+'.html', h0)
+		else:
+			return '{0}<ul><li><a href="{1}">{2}</a></li>'.format(pre, test, h0)
+	
+	return '{0}<ul><li>{1}</li>'.format(pre, test)
 
 def sitemap_html(m):
         return sitemap_print(
@@ -87,14 +90,37 @@ def sitemap_html(m):
 
 def sitemap_print(m, l = [], pre = '', func_open = sm_open_default, fmt_close = None):
         
-        for k,v in m[1].items():
-                if func_open:
-                        l.append(func_open(pre, k, m[0]))
-                l = sitemap_print(v, l, pre+' ', func_open, fmt_close)
-                if fmt_close:
-                        l.append(fmt_close.format(pre, k))
+	t = m[1].items()
+	
+	#print 't'
+	#for x in t:
+	#	print x
+	
+	def cmp0(a, b):
+		#print a,b
+		m0 = a[1][1]
+		m1 = b[1][1]
+		if bool(m0) != bool(m1):
+			return cmp(bool(m0), bool(m1))
+		return cmp(a[0], b[0])
+	
+	t = sorted(t, cmp0)
+	
+	#print 't'
+	#for x in t:
+	#	print x
+	
+	for k,v in t:
+		
+		if func_open:
+				l.append(func_open(pre, k, m[0]))
+		
+		l = sitemap_print(v, l, pre+' ', func_open, fmt_close)
+		
+		if fmt_close:
+				l.append(fmt_close.format(pre, k))
 
-        return l
+	return l
 
 def process(src, temp):
 
@@ -150,8 +176,9 @@ html = temp.render(html = body)
 with open('build/map.html', 'w') as f:
         f.write(html)
 
-#l = sitemap_print(m)
-#print '\n'.join(l)
+l = sitemap_print(m)
+print '\n'.join(l)
 
+raw_input()
 
 
